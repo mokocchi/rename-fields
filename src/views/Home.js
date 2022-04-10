@@ -6,8 +6,8 @@ import Header from '../components/Header'
 function Home () {
   const [targetAppfields, setTargetAppfields] = useState([])
   const [originalFields, setOriginalFields] = useState([])
-  const [columns, setColumns] = useState([])
   const [data, setData] = useState([])
+  const [separator, setSeparator] = useState('comma')
   return (
     <Container>
       <Row>
@@ -24,13 +24,17 @@ function Home () {
               <Header
                 targetAppfields={targetAppfields} setTargetAppfields={setTargetAppfields}
                 originalFields={originalFields} setOriginalFields={setOriginalFields}
-                setColumns={setColumns} setData={setData}
+                setData={setData} separator={separator} setSeparator={setSeparator}
               />
             </Col>
           </Row>
           <Row>
             <Col>
-              <FieldsTable targetAppfields={targetAppfields} originalFields={originalFields} columns={columns} data={data} />
+              {(data.length > 0) &&
+                <FieldsTable
+                  targetAppfields={targetAppfields} originalFields={originalFields}
+                  data={data} separator={separator}
+                />}
             </Col>
           </Row>
         </Col>

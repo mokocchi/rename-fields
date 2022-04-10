@@ -91,9 +91,9 @@ function Settings ({ targetAppfields, setTargetAppfields }) {
     <>
       <Form.Group className='mb-3'>
         <Form.Label>Configuración</Form.Label>
-        <Form.Control as='button' variant='warning' onClick={handleShow}>
+        <Button className='form-control' variant='warning' onClick={handleShow}>
           Administrar campos
-        </Form.Control>
+        </Button>
       </Form.Group>
 
       <Modal show={show} onHide={handleClose}>
