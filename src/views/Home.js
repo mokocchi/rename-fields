@@ -33,7 +33,7 @@ function Home () {
               {(data.length > 0) &&
                 <FieldsTable
                   targetAppfields={targetAppfields} originalFields={originalFields}
-                  data={data} separator={separator}
+                  data={data} separator={separator} setOriginalFields={setOriginalFields}
                 />}
             </Col>
           </Row>

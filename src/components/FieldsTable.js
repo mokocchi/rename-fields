@@ -1,11 +1,15 @@
 import { React, useState } from 'react'
 import { Alert, Button, Col, Form, Row, Table } from 'react-bootstrap'
 
-function FieldsTable ({ targetAppfields, originalFields, columns, data, separator }) {
+function FieldsTable({ targetAppfields, originalFields, setOriginalFields, columns, data, separator }) {
   const [line, setLine] = useState('')
   const [error, setError] = useState('')
+  const [errorFieldName, setErrorFieldName] = useState('')
   const [checkError, setCheckError] = useState('')
   const [editing, setEditing] = useState(true)
+  const [showCustomField, setShowCustomField] = useState(false)
+  const [customField, setCustomField] = useState('')
+  const [defaultValue, setDefaultValue] = useState('')
   const [chosenTargetFields, setchosenTargetFields] = useState({})
   const [configurations, setConfigurations] = useState({})
   const formats = [
@@ -45,7 +49,8 @@ function FieldsTable ({ targetAppfields, originalFields, columns, data, separato
 
   const checkFields = () => {
     setEditing(false)
-    console.log('check')
+    console.log(configurations)
+    setCheckError('falta validación')
   }
 
   const handleExport = () => {
@@ -68,9 +73,48 @@ function FieldsTable ({ targetAppfields, originalFields, columns, data, separato
     setchosenTargetFields({ ...chosentfs })
   }
 
+  const handleClickCustomField = () => setShowCustomField(true)
+
+  const handleCustomFieldChange = e => setCustomField(e.target.value)
+
+  const handleDefaultValueChange = e => setDefaultValue(e.target.value)
+
+  const handleSaveField = () => {
+    if (customField === '') {
+      setErrorFieldName('El campo está vacío')
+    } else {
+      const fields = originalFields
+      if (!fields.includes(customField)) {
+        fields.push(customField)
+        setOriginalFields([...fields])
+        setShowCustomField(false)
+        setCustomField('')
+      } else {
+        setErrorFieldName('El campo ya existe')
+      }
+    }
+  }
+
   return (
     <div>
-      <Button className='button mb-3' variant='success'>Agregar campo combinado</Button>
+      {targetAppfields.length > originalFields.length && <Alert variant='warning'>Hay más campos destino que campos en el dataset. Agregue campos personalizados o borre campos destino.</Alert>}
+      {showCustomField
+        ? (
+          <Row>
+            <Col className='md-4'>
+              <Form.Group className='mb-3 needs-validation'>
+                <Form.Label>Campo personalizado</Form.Label>
+                <div className='invalid-feedback d-block'>
+                  {errorFieldName}
+                </div>
+                <Form.Control className={(errorFieldName === '') ? ((customField !== '') && 'is-valid') : 'is-invalid'} value={customField} onChange={handleCustomFieldChange} type='text' placeholder='Ingrese un nombre de campo...' />
+                <Form.Control className={(error === '') ? ((defaultValue !== '') && 'is-valid') : 'is-invalid'} onKeyDown={handleKeyDown} value={defaultValue} onChange={handleDefaultValueChange} type='text' placeholder='Ingrese un valor por defecto...' />
+                <Button className='mt-3' onClick={handleSaveField} variant='success'>Agregar</Button>
+              </Form.Group>
+            </Col>
+            <Col className='md-8'> </Col>
+          </Row>)
+        : <Button className='button mb-3' onClick={handleClickCustomField} variant='success'>Agregar campo personalizado</Button>}
       <Table bordered>
         <thead>
           <tr>
