@@ -1,7 +1,7 @@
 import { React } from 'react'
 import { Button, Form, Table } from 'react-bootstrap'
 
-function FieldsTable () {
+function FieldsTable ({ targetAppfields }) {
   const originalFields = [
     'causa',
     'rol',
@@ -33,37 +33,7 @@ function FieldsTable () {
     'participantes_victimas',
     'participantes_acusados'
   ]
-  const targetFields = [
-    'causa',
-    'rol',
-    'tipo',
-    'sexo',
-    'edad',
-    'mes',
-    'periodo',
-    'fecha',
-    'hora',
-    'lugar_hecho',
-    'direccion_normalizada',
-    'tipo_calle',
-    'direccion_normalizada_arcgis',
-    'calle1',
-    'altura',
-    'calle2',
-    'codigo_calle',
-    'codigo_cruce',
-    'geocodificacion',
-    'semestre',
-    'x',
-    'y',
-    'geom',
-    'cantidad_victimas',
-    'comuna',
-    'geom_3857',
-    'tipo_colision1',
-    'participantes_victimas',
-    'participantes_acusados'
-  ]
+
   const formats = [
     'text',
     'integer',
@@ -72,7 +42,7 @@ function FieldsTable () {
 
   return (
     <div>
-      <Button variant='success'>Agregar campo combinado</Button>
+      <Button className='button .mb-3' variant='success'>Agregar campo combinado</Button>
       <Table bordered>
         <thead>
           <tr>
@@ -92,8 +62,10 @@ function FieldsTable () {
             <tr key={indexof}>
               <td>{of}</td>
               <td>
-                <Form.Select>
-                  {targetFields.map((tf, indextf) => (
+                <Form.Select disabled={targetAppfields.length === 0}>
+                  {(targetAppfields.length === 0) &&
+                    <option>No hay campos</option>}
+                  {targetAppfields.map((tf, indextf) => (
                     <option key={`${indexof}-${indextf}`}>{tf}</option>
                   ))}
                 </Form.Select>
