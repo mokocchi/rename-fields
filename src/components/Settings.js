@@ -4,6 +4,7 @@ import { Button, Modal, ListGroup, ListGroupItem, Form, Row, Col } from 'react-b
 function Settings ({ targetAppfields, setTargetAppfields }) {
   const [show, setShow] = useState(false)
   const [newField, setNewField] = useState('')
+  const [error, setError] = useState('')
   const [showInput, setShowInput] = useState(false)
   const [showAddButton, setShowAddButton] = useState(true)
 
@@ -16,13 +17,19 @@ function Settings ({ targetAppfields, setTargetAppfields }) {
   }
 
   const handleSave = () => {
-    if ((newField !== undefined) && newField !== '') {
+    if (newField === '') {
+      setError('El campo está vacío')
+    } else {
       const fields = targetAppfields
-      fields.push(newField)
-      setTargetAppfields(fields)
-      setShowInput(false)
-      setShowAddButton(true)
-      setNewField('')
+      if (!fields.includes(newField)) {
+        fields.push(newField)
+        setTargetAppfields([...fields])
+        setShowInput(false)
+        setShowAddButton(true)
+        setNewField('')
+      } else {
+        setError('El campo ya existe')
+      }
     }
   }
 
@@ -32,7 +39,19 @@ function Settings ({ targetAppfields, setTargetAppfields }) {
     setTargetAppfields([...fields])
   }
 
-  const handleChange = (event) => setNewField(event.target.value)
+  const handleChange = (event) => {
+    if (event.target.value === '') {
+      setError('El campo está vacío')
+    }
+    if (!targetAppfields.includes(event.target.value)) {
+      setError('')
+    } else {
+      setError('El campo ya existe')
+    }
+    setNewField(event.target.value)
+  }
+
+  const handleKeyDown = (event) => (event.key === 'Enter') && handleSave()
 
   const fillDefaultFields = () => {
     setTargetAppfields([
@@ -98,14 +117,17 @@ function Settings ({ targetAppfields, setTargetAppfields }) {
           </ListGroup>
           {showInput &&
             <>
-              <Form.Group className='mb-3'>
+              <Form.Group className='mb-3 needs-validation'>
                 <Form.Label>Campo</Form.Label>
-                <Form.Control value={newField} onChange={handleChange} type='text' placeholder='Ingrese un campo nuevo...' />
+                <div className='invalid-feedback d-block'>
+                  {error}
+                </div>
+                <Form.Control className={(error === '') ? ((newField !== '') && 'is-valid') : 'is-invalid'} autoFocus onKeyDown={handleKeyDown} value={newField} onChange={handleChange} type='text' placeholder='Ingrese un campo nuevo...' />
               </Form.Group>
               <Button onClick={handleSave} variant='success'>Guardar</Button>
             </>}
           {showAddButton &&
-            <Button onClick={handleClick} variant='success'>Agregar nuevo campo</Button>}
+            <Button onClick={handleClick} className='mt-3' variant='success'>Agregar nuevo campo</Button>}
         </Modal.Body>
         <Modal.Footer>
           <Button variant='warning' onClick={fillDefaultFields}>
