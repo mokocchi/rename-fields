@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/rename-fields/static/css/main.073c9b0a.css",
-    "main.js": "/rename-fields/static/js/main.b39a106d.js",
+    "main.js": "/rename-fields/static/js/main.a2157dab.js",
     "index.html": "/rename-fields/index.html",
     "main.073c9b0a.css.map": "/rename-fields/static/css/main.073c9b0a.css.map",
-    "main.b39a106d.js.map": "/rename-fields/static/js/main.b39a106d.js.map"
+    "main.a2157dab.js.map": "/rename-fields/static/js/main.a2157dab.js.map"
   },
   "entrypoints": [
     "static/css/main.073c9b0a.css",
-    "static/js/main.b39a106d.js"
+    "static/js/main.a2157dab.js"
   ]
 }
