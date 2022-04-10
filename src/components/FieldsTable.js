@@ -1,9 +1,13 @@
 import { React, useState } from 'react'
-import { Button, Col, Form, Row, Table } from 'react-bootstrap'
+import { Alert, Button, Col, Form, Row, Table } from 'react-bootstrap'
 
 function FieldsTable ({ targetAppfields, originalFields, columns, data, separator }) {
   const [line, setLine] = useState('')
   const [error, setError] = useState('')
+  const [checkError, setCheckError] = useState('')
+  const [editing, setEditing] = useState(true)
+  const [chosenTargetFields, setchosenTargetFields] = useState({})
+  const [configurations, setConfigurations] = useState({})
   const formats = [
     'text',
     'integer',
@@ -11,10 +15,6 @@ function FieldsTable ({ targetAppfields, originalFields, columns, data, separato
   ]
 
   const pattern = () => (separator === 'comma') ? /,(?![^"]*"(?:(?:[^"]*"){2})*[^"]*$)/ : /;(?![^"]*"(?:(?:[^"]*"){2})*[^"]*$)/
-
-  const handleLine = (e) => {
-    setLine(e.target.value)
-  }
 
   const handleLineChange = e => {
     if (e.target.value === '') {
@@ -42,6 +42,31 @@ function FieldsTable ({ targetAppfields, originalFields, columns, data, separato
   }
 
   const handleKeyDown = e => e.target.code === 'Enter' && handleLineChange()
+
+  const checkFields = () => {
+    setEditing(false)
+    console.log('check')
+  }
+
+  const handleExport = () => {
+    checkFields()
+    alert('Exportar')
+  }
+
+  const handleSubmit = () => {
+    checkFields()
+    alert('Enviar')
+  }
+
+  const handleFieldChange = (e, index) => {
+    const configs = configurations
+    configs[originalFields[index]] = e.target.value
+    setConfigurations({...configs})
+
+    const chosentfs = chosenTargetFields
+    chosentfs[index] = e.target.value
+    setchosenTargetFields({...chosentfs})
+  }
 
   return (
     <div>
@@ -75,11 +100,11 @@ function FieldsTable ({ targetAppfields, originalFields, columns, data, separato
               <td>{of}</td>
               <td>{(data.length === 1) ? 'No hay datos' : ((error === '') && (line !== '') ? data[Math.floor(Number(line))].split(pattern())[indexof] : '')}</td>
               <td>
-                <Form.Select disabled={targetAppfields.length === 0} onChange={handleLine}>
+                <Form.Select value={chosenTargetFields[indexof]} disabled={targetAppfields.length === 0} onChange={e => handleFieldChange(e, indexof)}>
                   {(targetAppfields.length === 0) &&
                     <option>No hay campos</option>}
                   {targetAppfields.map((tf, indextf) => (
-                    <option key={`${indexof}-${indextf}`}>{tf}</option>
+                    <option key={`${indexof}-${indextf}`} value={tf}>{tf}</option>
                   ))}
                 </Form.Select>
               </td>
@@ -96,8 +121,14 @@ function FieldsTable ({ targetAppfields, originalFields, columns, data, separato
       </Table>
       <Row>
         <Col className='md-9-3'>
-          <Button className='button mb-3 btn-block' variant='success'>Exportar archivo</Button>
-          <Button className='button mb-3 float-end btn-block' variant='danger'>Enviar a la aplicación</Button>
+          {(checkError !== '')
+            ? <Alert variant='danger'>Estado: {checkError}</Alert>
+            : editing
+              ? <Alert variant='warning'>Estado: editando</Alert>
+              : <Alert variant='success'>Estado: correcto</Alert>}
+          <Button onClick={checkFields} className='button mb-3 me-3 btn-block' variant='warning'>Validar</Button>
+          <Button onClick={handleExport} className='button mb-3 btn-block center' variant='success'>Exportar archivo</Button>
+          <Button onClick={handleSubmit} className='button mb-3 float-end btn-block' variant='danger'>Enviar a la aplicación</Button>
         </Col>
       </Row>
     </div>
