@@ -9,7 +9,12 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
   const [editing, setEditing] = useState(true)
   const [showCustomField, setShowCustomField] = useState(false)
   const [customField, setCustomField] = useState('')
+  const [variant, setVariant] = useState('default_value')
   const [defaultValue, setDefaultValue] = useState('')
+  const [partialFields, setPartialFields] = useState([])
+  const [partialFieldErrors, setPartialFieldErrors] = useState([])
+  const [partialFieldValue, setPartialFieldValue] = useState([])
+  const [showPartialFields, setShowPartialFields] = useState([])
   const [chosenTargetFields, setchosenTargetFields] = useState({})
   const [configurations, setConfigurations] = useState({})
   const formats = [
@@ -49,7 +54,6 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
 
   const checkFields = () => {
     setEditing(false)
-    console.log(configurations)
     setCheckError('falta validación')
   }
 
@@ -65,7 +69,7 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
 
   const handleFieldChange = (e, index) => {
     const configs = configurations
-    configs[originalFields[index]] = e.target.value
+    configs[originalFields[index]].field = e.target.value
     setConfigurations({ ...configs })
 
     const chosentfs = chosenTargetFields
@@ -74,6 +78,15 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
   }
 
   const handleClickCustomField = () => setShowCustomField(true)
+
+  const hideCustomField = () => {
+    setCustomField('')
+    setDefaultValue('')
+    setPartialFieldValue('')
+    setErrorFieldName('')
+    setPartialFields([])
+    setShowCustomField(false)
+  }
 
   const handleCustomFieldChange = e => setCustomField(e.target.value)
 
@@ -89,9 +102,64 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
         setOriginalFields([...fields])
         setShowCustomField(false)
         setCustomField('')
+        setDefaultValue('')
+        setPartialFieldValue('')
+        setErrorFieldName('')
+        setPartialFields([])
+        const configs = configurations
+        configs[customField].value = (variant === 'default_value' ? defaultValue : (partialFields.map(item => item.variant === 'default_value' ? item.value : `<${item.variant}>`).join(variant === 'concat_dash' ? '-' : ' ')))
+        setConfigurations({ ...configs })
       } else {
         setErrorFieldName('El campo ya existe')
       }
+    }
+  }
+
+  const handleFieldVariantChange = e => {
+    if ((e.target.value === 'concat') || (e.target.value === 'concat_dash')) {
+      setPartialFields([{
+        variant: 'default_value',
+        value: ''
+      }, {
+        variant: 'default_value',
+        value: ''
+      }])
+      setShowPartialFields([true, true])
+    }
+    setVariant(e.target.value)
+  }
+
+  const handlePartiaFieldChange = (e, index) => {
+    const fields = partialFields
+    fields[index].variant = e.target.value
+    setPartialFields([...fields])
+    const shows = showPartialFields
+    shows[index] = (e.target.value === 'default_value')
+    setShowPartialFields([...shows])
+  }
+
+  const handleCustomFieldConcatChange = (e, index) => {
+    if (e.target.value === '') {
+      const errors = partialFieldErrors
+      errors[index] = 'El valor está vacío'
+      setPartialFieldErrors([...errors])
+      const fields = partialFields
+      fields[index].value = e.target.value
+      setPartialFields([...fields])
+      return
+    }
+    const regex = /^[a-z0-9]+$/i
+    if (regex.test(e.target.value)) {
+      const fields = partialFields
+      fields[index].value = e.target.value
+      setPartialFields([...fields])
+      const errors = partialFieldErrors
+      errors[index] = ''
+      setPartialFieldErrors([...errors])
+    } else {
+      const errors = partialFieldErrors
+      errors[index] = 'Solo valores alfanumericos'
+      setPartialFieldErrors([...errors])
     }
   }
 
@@ -108,8 +176,45 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
                   {errorFieldName}
                 </div>
                 <Form.Control className={(errorFieldName === '') ? ((customField !== '') && 'is-valid') : 'is-invalid'} value={customField} onChange={handleCustomFieldChange} type='text' placeholder='Ingrese un nombre de campo...' />
-                <Form.Control className={(error === '') ? ((defaultValue !== '') && 'is-valid') : 'is-invalid'} onKeyDown={handleKeyDown} value={defaultValue} onChange={handleDefaultValueChange} type='text' placeholder='Ingrese un valor por defecto...' />
+                <Form.Label>Variante</Form.Label>
+                <Form.Select onChange={handleFieldVariantChange}>
+                  <option value='default_value'>Valor por defecto</option>
+                  <option value='concat'>Concatenado (con espacios)</option>
+                  <option value='concat_dash'>Concatenado (con guiones)</option>
+                </Form.Select>
+                {variant === 'default_value'
+                  ? (
+                    <>
+                      <Form.Label>Valor por defecto</Form.Label>
+                      <Form.Control value={defaultValue} onChange={handleDefaultValueChange} type='text' placeholder='Ingrese un valor por defecto...' />
+                    </>)
+                  : (
+                    <>
+                      {partialFields.map((it, index) => (
+                        <div key={`part-${index}`}>
+                          <Form.Label>Campo {index + 1}</Form.Label>
+                          <Form.Select onChange={e => handlePartiaFieldChange(e, index)}>
+                            <option value='default_value'>Valor por defecto</option>
+                            {
+                              originalFields.map((item, indexof) =>
+                                <option key={`custom-${index}-${indexof}`} value={item}>{item}</option>
+                              )
+                            }
+                          </Form.Select>
+                          {showPartialFields[index] && (
+                            <>
+                              <Form.Label>Valor por defecto</Form.Label>
+                              <Form.Control value={partialFields[index].value} onChange={e => handleCustomFieldConcatChange(e, index)} type='text' placeholder='Ingrese un valor por defecto...' />
+                              <div className='invalid-feedback d-block'>
+                                {partialFieldErrors[index]}
+                              </div>
+                            </>)}
+                        </div>
+                      ))}
+                    </>)}
+                <Form.Control disabled value={(variant === 'default_value' ? defaultValue : (partialFields.map(item => item.variant === 'default_value' ? item.value : `<${item.variant}>`).join(variant === 'concat_dash' ? '-' : ' ')))} />
                 <Button className='mt-3' onClick={handleSaveField} variant='success'>Agregar</Button>
+                <Button className='mt-3' onClick={hideCustomField} variant='secondary'>Cancelar</Button>
               </Form.Group>
             </Col>
             <Col className='md-8'> </Col>

@@ -27,7 +27,6 @@ function Header ({ targetAppfields, setTargetAppfields, setOriginalFields, setDa
     setLoading(true)
     const reader = new FileReader()
     reader.onload = event => processData(event.target.result)
-    reader.onprogress = event => console.log('progress:', Math.round(event.total / event.loaded * 100) / 100, '%')
     reader.readAsText(file, encoding)
   }
 
