@@ -61,11 +61,11 @@ function FieldsTable ({ targetAppfields, originalFields, columns, data, separato
   const handleFieldChange = (e, index) => {
     const configs = configurations
     configs[originalFields[index]] = e.target.value
-    setConfigurations({...configs})
+    setConfigurations({ ...configs })
 
     const chosentfs = chosenTargetFields
     chosentfs[index] = e.target.value
-    setchosenTargetFields({...chosentfs})
+    setchosenTargetFields({ ...chosentfs })
   }
 
   return (
@@ -101,8 +101,9 @@ function FieldsTable ({ targetAppfields, originalFields, columns, data, separato
               <td>{(data.length === 1) ? 'No hay datos' : ((error === '') && (line !== '') ? data[Math.floor(Number(line))].split(pattern())[indexof] : '')}</td>
               <td>
                 <Form.Select value={chosenTargetFields[indexof]} disabled={targetAppfields.length === 0} onChange={e => handleFieldChange(e, indexof)}>
-                  {(targetAppfields.length === 0) &&
-                    <option>No hay campos</option>}
+                  {(targetAppfields.length === 0)
+                    ? <option>No hay campos</option>
+                    : <option key='null'>Anular campo</option>}
                   {targetAppfields.map((tf, indextf) => (
                     <option key={`${indexof}-${indextf}`} value={tf}>{tf}</option>
                   ))}
