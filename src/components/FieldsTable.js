@@ -1,7 +1,7 @@
 import { React, useState } from 'react'
 import { Alert, Button, Col, Form, Row, Table } from 'react-bootstrap'
 
-function FieldsTable ({ targetAppfields, originalFields, setOriginalFields, columns, data, separator }) {
+function FieldsTable({ targetAppfields, originalFields, setOriginalFields, columns, data, separator }) {
   const [line, setLine] = useState('')
   const [error, setError] = useState('')
   const [errorFieldName, setErrorFieldName] = useState('')
@@ -11,6 +11,7 @@ function FieldsTable ({ targetAppfields, originalFields, setOriginalFields, colu
   const [customField, setCustomField] = useState('')
   const [variant, setVariant] = useState('default_value')
   const [defaultValue, setDefaultValue] = useState('')
+  const [defaultValueErrors, setDefaultValueErrors] = useState([])
   const [partialFields, setPartialFields] = useState([])
   const [partialFieldErrors, setPartialFieldErrors] = useState([])
   const [showPartialFields, setShowPartialFields] = useState([])
@@ -88,7 +89,13 @@ function FieldsTable ({ targetAppfields, originalFields, setOriginalFields, colu
 
   const handleCustomFieldChange = e => setCustomField(e.target.value)
 
-  const handleDefaultValueChange = e => setDefaultValue(e.target.value)
+  const handleDefaultValueChange = e => {
+    if (e.target.value.includes(',')) {
+      setDefaultValueErrors('No se permiten comas')
+    } else {
+      setDefaultValue(e.target.value)
+    }
+  }
 
   const handleSaveField = () => {
     if (customField === '') {
@@ -185,6 +192,9 @@ function FieldsTable ({ targetAppfields, originalFields, setOriginalFields, colu
                     <>
                       <Form.Label>Valor por defecto</Form.Label>
                       <Form.Control value={defaultValue} onChange={handleDefaultValueChange} type='text' placeholder='Ingrese un valor por defecto...' />
+                      <div className='invalid-feedback d-block'>
+                        {defaultValueErrors}
+                      </div>
                     </>)
                   : (
                     <>
