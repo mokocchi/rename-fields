@@ -1,7 +1,7 @@
 import { React, useState } from 'react'
 import { Alert, Button, Col, Form, Row, Table } from 'react-bootstrap'
 
-function FieldsTable({ targetAppfields, originalFields, setOriginalFields, columns, data, separator }) {
+function FieldsTable ({ targetAppfields, originalFields, setOriginalFields, columns, data, separator }) {
   const [line, setLine] = useState('')
   const [error, setError] = useState('')
   const [errorFieldName, setErrorFieldName] = useState('')
@@ -13,7 +13,6 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
   const [defaultValue, setDefaultValue] = useState('')
   const [partialFields, setPartialFields] = useState([])
   const [partialFieldErrors, setPartialFieldErrors] = useState([])
-  const [partialFieldValue, setPartialFieldValue] = useState([])
   const [showPartialFields, setShowPartialFields] = useState([])
   const [chosenTargetFields, setchosenTargetFields] = useState({})
   const [configurations, setConfigurations] = useState({})
@@ -82,7 +81,6 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
   const hideCustomField = () => {
     setCustomField('')
     setDefaultValue('')
-    setPartialFieldValue('')
     setErrorFieldName('')
     setPartialFields([])
     setShowCustomField(false)
@@ -103,10 +101,10 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
         setShowCustomField(false)
         setCustomField('')
         setDefaultValue('')
-        setPartialFieldValue('')
         setErrorFieldName('')
         setPartialFields([])
         const configs = configurations
+        configs[customField] = {}
         configs[customField].value = (variant === 'default_value' ? defaultValue : (partialFields.map(item => item.variant === 'default_value' ? item.value : `<${item.variant}>`).join(variant === 'concat_dash' ? '-' : ' ')))
         setConfigurations({ ...configs })
       } else {
@@ -213,7 +211,7 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
                       ))}
                     </>)}
                 <Form.Control disabled value={(variant === 'default_value' ? defaultValue : (partialFields.map(item => item.variant === 'default_value' ? item.value : `<${item.variant}>`).join(variant === 'concat_dash' ? '-' : ' ')))} />
-                <Button className='mt-3' onClick={handleSaveField} variant='success'>Agregar</Button>
+                <Button className='mt-3 me-3' onClick={handleSaveField} variant='success'>Agregar</Button>
                 <Button className='mt-3' onClick={hideCustomField} variant='secondary'>Cancelar</Button>
               </Form.Group>
             </Col>
@@ -239,6 +237,9 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
               Campo corregido
             </th>
             <th>
+              Valor por defecto
+            </th>
+            <th>
               Formato
             </th>
           </tr>
@@ -257,6 +258,9 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
                     <option key={`${indexof}-${indextf}`} value={tf}>{tf}</option>
                   ))}
                 </Form.Select>
+              </td>
+              <td>
+                {configurations[of] ? configurations[of].value : '<No disponible>'}
               </td>
               <td>
                 <Form.Select>
