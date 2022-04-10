@@ -1,39 +1,7 @@
 import { React } from 'react'
-import { Button, Form, Table } from 'react-bootstrap'
+import { Button, Col, Form, Row, Table } from 'react-bootstrap'
 
-function FieldsTable ({ targetAppfields }) {
-  const originalFields = [
-    'causa',
-    'rol',
-    'tipo',
-    'sexo',
-    'edad',
-    'mes',
-    'periodo',
-    'fecha',
-    'hora',
-    'lugar_hecho',
-    'direccion_normalizada',
-    'tipo_calle',
-    'direccion_normalizada_arcgis',
-    'calle1',
-    'altura',
-    'calle2',
-    'codigo_calle',
-    'codigo_cruce',
-    'geocodificacion',
-    'semestre',
-    'x',
-    'y',
-    'geom',
-    'cantidad_victimas',
-    'comuna',
-    'geom_3857',
-    'tipo_colision1',
-    'participantes_victimas',
-    'participantes_acusados'
-  ]
-
+function FieldsTable ({ targetAppfields, originalFields, columns, data }) {
   const formats = [
     'text',
     'integer',
@@ -42,7 +10,7 @@ function FieldsTable ({ targetAppfields }) {
 
   return (
     <div>
-      <Button className='button .mb-3' variant='success'>Agregar campo combinado</Button>
+      <Button className='button mb-3' variant='success'>Agregar campo combinado</Button>
       <Table bordered>
         <thead>
           <tr>
@@ -81,6 +49,12 @@ function FieldsTable ({ targetAppfields }) {
           ))}
         </tbody>
       </Table>
+      <Row>
+        <Col className='md-9-3'>
+          <Button className='button mb-3 btn-block' variant='success'>Exportar archivo</Button>
+          <Button className='button mb-3 float-end btn-block' variant='danger'>Enviar a la aplicación</Button>
+        </Col>
+      </Row>
     </div>
   )
 }

@@ -5,6 +5,9 @@ import Header from '../components/Header'
 
 function Home () {
   const [targetAppfields, setTargetAppfields] = useState([])
+  const [originalFields, setOriginalFields] = useState([])
+  const [columns, setColumns] = useState([])
+  const [data, setData] = useState([])
   return (
     <Container>
       <Row>
@@ -18,12 +21,16 @@ function Home () {
         <Col style={{ border: '1px solid black', padding: '2em' }}>
           <Row>
             <Col>
-              <Header targetAppfields={targetAppfields} setTargetAppfields={setTargetAppfields} />
+              <Header
+                targetAppfields={targetAppfields} setTargetAppfields={setTargetAppfields}
+                originalFields={originalFields} setOriginalFields={setOriginalFields}
+                setColumns={setColumns} setData={setData}
+              />
             </Col>
           </Row>
           <Row>
             <Col>
-              <FieldsTable targetAppfields={targetAppfields} />
+              <FieldsTable targetAppfields={targetAppfields} originalFields={originalFields} columns={columns} data={data} />
             </Col>
           </Row>
         </Col>
