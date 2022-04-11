@@ -20,6 +20,11 @@ function FieldsTable({
   const [partialFields, setPartialFields] = useState([])
   const [partialFieldErrors, setPartialFieldErrors] = useState([])
   const [showPartialFields, setShowPartialFields] = useState([])
+  const [fileUrl, setFileUrl] = useState()
+  const [errorFilename, setErrorFilename] = useState('')
+  const [newFilename, setNewFilename] = useState('')
+  const [fileExtension, setFileExtension] = useState('')
+  const [hideExport, setHideExport] = useState(false)
   const formats = [
     'text',
     'integer',
@@ -62,22 +67,26 @@ function FieldsTable({
         }
       })
       setConfigurations({ ...configs })
+      const chosenFields = []
+      targetAppfields.forEach(item => {
+        chosenFields.push('null')
+      })
+      setChosenTargetFields(chosenFields)
       setLoadConfigurations(false)
     }
-  }, [loadConfigurations, originalFields, setLoadConfigurations, setConfigurations])
+  }, [loadConfigurations, originalFields, setLoadConfigurations, setConfigurations, setChosenTargetFields, targetAppfields.length])
 
   const checkFields = () => {
     setEditing(false)
     // que todos los target fields estén ocupados
-    const allTargetFieldsUsed = targetAppfields.reduce(
-      (previousValue, currentValue) =>
-        previousValue && originalFields.find(of =>
-          configurations[of].field === currentValue), true)
+    const unusedTargetFields = targetAppfields.filter(
+      (item) => (!originalFields.find(of => configurations[of].field === item))
+    )
     // que al menos un campo no esté anulado
     const atLeastOneNotNullField = Object.keys(configurations).reduce((previousValue, currentValue) =>
-      currentValue || (configurations[currentValue].value !== 'null'), true)
-    if (!allTargetFieldsUsed) {
-      setCheckError('Hay campos destino sin usar')
+      previousValue || (configurations[currentValue].field !== null), false)
+    if (unusedTargetFields.length > 0) {
+      setCheckError(`Hay campos destino sin usar: ${unusedTargetFields.join(', ')}`)
       return
     }
     if (!atLeastOneNotNullField) {
@@ -85,55 +94,38 @@ function FieldsTable({
       return
     }
     setCheckError('')
+    setHideExport(false)
   }
 
   const collectData = () => {
-    let text = ''
-    let json = {}
+    const headers = {}
 
-    const headers = Object.keys(configurations).map((key, index) => {
+    Object.keys(configurations).forEach((key, index) => {
       if (configurations[key].field !== null) {
-        return {
-          [index]: {
-            index: index,
-            origin: key,
-            target: configurations[key].field
-          }
+        headers[index] = {
+          index: index,
+          origin: key,
+          target: configurations[key].field
         }
-      } else {
-        return null
       }
-    }).filter(item => item !== null)
+    })
 
-    const newRows = [].fill(data.length - 1)
+    const JSONData = []
+    const csvRows = [Object.keys(headers).map(index => headers[index].target)]
 
     data.forEach((row, i) => {
-      if ((i > 0) && (i < 20)) {
-        newRows[i - 1] = {}
+      if (i > 0) {
+        JSONData[i - 1] = {}
+        csvRows[i] = []
         row.split(pattern()).forEach((cell, j) => {
           if (chosenTargetFields[j]) {
-            newRows[i - 1][chosenTargetFields[j]] = cell
+            JSONData[i - 1][chosenTargetFields[j]] = cell
+            csvRows[i].push(cell)
           }
         })
       }
     })
-    console.log(newRows)
-    const JSONData = newRows
-    const csvData = newRows.map(item => `${item[headers[0]]}`)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    const csvData = csvRows.map(item => item.join(',')).join('\n')
     return {
       json: JSONData,
       csv: csvData
@@ -141,11 +133,10 @@ function FieldsTable({
   }
 
   const outputFile = () => {
-    const text = collectData()
-    let textFile = null
-    const data = new Blob([text], { type: 'text/plain' })
+    const { csv } = collectData()
+    const data = new Blob([csv], { type: 'text/plain' })
 
-    textFile = window.URL.createObjectURL(data);
+    const textFile = window.URL.createObjectURL(data);
 
     return textFile;
   }
@@ -153,8 +144,9 @@ function FieldsTable({
   const handleExport = () => {
     checkFields()
     if (checkError === '') {
-      outputFile()
+      setFileUrl(outputFile())
     }
+    setEditing(true)
   }
 
   const handleSubmit = () => {
@@ -263,6 +255,35 @@ function FieldsTable({
       errors[index] = 'Solo valores alfanumericos'
       setPartialFieldErrors([...errors])
     }
+  }
+
+  const handleNewFilenameChange = e => {
+    if (e.target.value === '') {
+      setErrorFilename('El nombre está vacío')
+    } else {
+      const regex = /^[a-zñáéíóúüA-ZÑÁÉÍÓÚÜ0-9-_.]+$/
+      if (!regex.test(e.target.value)) {
+        setErrorFilename('El nombre tiene caracteres inválidos')
+      } else {
+        setErrorFilename('')
+      }
+    }
+    setNewFilename(e.target.value)
+  }
+
+  const handleFileExtensionChange = e => {
+    setFileExtension(e.target.value)
+    if (e.target.value === 'csv') {
+      setNewFilename('.csv')
+    } else if (e.target.value === 'json') {
+      setNewFilename('.json')
+    }
+  }
+
+  const handleDownloadClick = () => {
+    setFileExtension('')
+    setNewFilename('')
+    setHideExport(true)
   }
 
   return (
@@ -381,15 +402,39 @@ function FieldsTable({
         </tbody>
       </Table>
       <Row>
-        <Col className='md-9-3'>
+        <Col className='col-md-9'>
           {(checkError !== '')
             ? <Alert variant='danger'>Estado: {checkError}</Alert>
             : editing
               ? <Alert variant='warning'>Estado: editando</Alert>
               : <Alert variant='success'>Estado: correcto</Alert>}
           <Button onClick={checkFields} className='button mb-3 me-3 btn-block' variant='warning'>Validar</Button>
-          <Button onClick={handleExport} className='button mb-3 btn-block center' variant='success'>Exportar archivo</Button>
-          <Button onClick={handleSubmit} className='button mb-3 float-end btn-block' variant='danger'>Enviar a la aplicación</Button>
+          {(checkError === '') && (editing === false) && (!hideExport) &&
+            <Button onClick={handleExport} className='button mb-3 btn-block center' variant='success'>Exportar archivo</Button>}
+        </Col>
+        <Col className='col-md-3'>
+          <Button onClick={handleSubmit} disabled className='button mb-3 float-end btn-block' variant='danger'>Enviar a la aplicación</Button>
+        </Col>
+      </Row>
+      <Row>
+        <Col className='col-md-9'>
+          {fileUrl &&
+            <Form.Group>
+              <Form.Select value={fileExtension} onChange={handleFileExtensionChange}>
+                <option value=''>Elija un tipo de archivo...</option>
+                <option value='csv'>CSV</option>
+                <option value='json'>JSON</option>
+              </Form.Select>
+              {fileExtension !== '' && (
+                <>
+                  <Form.Label>Nombre de archivo</Form.Label>
+                  <div className='invalid-feedback d-block'>
+                    {errorFilename}
+                  </div>
+                  <Form.Control className={(errorFilename === '') ? ((newFilename !== '') && 'is-valid') : 'is-invalid'} autoFocus value={newFilename} onChange={handleNewFilenameChange} type='text' placeholder='Ingrese un nombre de archivo...' />
+                </>)}
+              {(errorFilename === '') && (newFilename !== '') && <Button as='a' href={fileUrl} onClick={handleDownloadClick} download={newFilename}>Descargar</Button>}
+            </Form.Group>}
         </Col>
       </Row>
     </div>
