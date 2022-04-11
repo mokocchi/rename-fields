@@ -41,7 +41,7 @@ function Settings ({
     Object.keys(configurations).forEach(key => {
       const chosenFields = chosenTargetFields
       if (configurations[key].field === chosenFields[index]) {
-        configurations[key].value = 'null'
+        configurations[key].value = null
         chosenFields[index] = 'null'
         setChosenTargetFields([...chosenTargetFields])
       }

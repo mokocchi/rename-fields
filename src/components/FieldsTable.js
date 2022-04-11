@@ -1,7 +1,7 @@
 import { React, useEffect, useState } from 'react'
 import { Alert, Button, Col, Form, Row, Table } from 'react-bootstrap'
 
-function FieldsTable ({
+function FieldsTable({
   targetAppfields, originalFields, setOriginalFields,
   columns, data, separator, loadConfigurations, setLoadConfigurations,
   setConfigurations, configurations,
@@ -58,7 +58,7 @@ function FieldsTable ({
       const configs = {}
       originalFields.forEach(item => {
         configs[item] = {
-          value: 'null'
+          field: null
         }
       })
       setConfigurations({ ...configs })
@@ -87,9 +87,68 @@ function FieldsTable ({
     setCheckError('')
   }
 
+  const collectData = () => {
+    let text = ''
+    let json = {}
+
+    data.forEach((row, index) => {
+      row.split(pattern()).forEach(cell => {
+        if (index < 20) {
+          console.log(cell)
+        }
+      })
+    })
+
+    const headers = Object.keys(configurations).map((key, index) => {
+      if (configurations[key].field !== null) {
+        console.log(data[303].split(pattern())[index])
+        return {
+          index: index,
+          origin: key,
+          target: configurations[key].field
+        }
+      } else {
+        return null
+      }
+    }).filter(item => item !== null)
+
+    const JSONData = ''
+    const csvData = ''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return {
+      json: JSONData,
+      csv: csvData
+    }
+  }
+
+  const outputFile = () => {
+    const text = collectData()
+    let textFile = null
+    const data = new Blob([text], { type: 'text/plain' })
+
+    textFile = window.URL.createObjectURL(data);
+
+    return textFile;
+  }
+
   const handleExport = () => {
     checkFields()
-    alert('Exportar')
+    if (checkError === '') {
+      outputFile()
+    }
   }
 
   const handleSubmit = () => {
@@ -292,7 +351,7 @@ function FieldsTable ({
               <td>{of}</td>
               <td>{(data.length === 1) ? 'No hay datos' : ((error === '') && (line !== '') ? data[Math.floor(Number(line))].split(pattern())[indexof] : '')}</td>
               <td>
-                <Form.Select value={console.log(indexof, ': ', chosenTargetFields[indexof]) || chosenTargetFields[indexof]} disabled={targetAppfields.length === 0} onChange={e => handleFieldChange(e, indexof)}>
+                <Form.Select value={chosenTargetFields[indexof]} disabled={targetAppfields.length === 0} onChange={e => handleFieldChange(e, indexof)}>
                   {(targetAppfields.length === 0)
                     ? <option>No hay campos</option>
                     : <option key='null'>Anular campo</option>}
