@@ -16,7 +16,7 @@ function Home () {
       <Row>
         <Col>
           <h2>
-            Página principal
+            Renombrar campos
           </h2>
         </Col>
       </Row>

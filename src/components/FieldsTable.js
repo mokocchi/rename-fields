@@ -125,7 +125,7 @@ function FieldsTable({
         })
       }
     })
-    const csvData = csvRows.map(item => item.join(',')).join('\n')
+    const csvData = csvRows.filter(item => item.length !== 0).map(item => item.join(',')).join('\n')
     return {
       json: JSONData,
       csv: csvData
