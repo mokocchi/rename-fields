@@ -91,29 +91,35 @@ function FieldsTable({
     let text = ''
     let json = {}
 
-    data.forEach((row, index) => {
-      row.split(pattern()).forEach(cell => {
-        if (index < 20) {
-          console.log(cell)
-        }
-      })
-    })
-
     const headers = Object.keys(configurations).map((key, index) => {
       if (configurations[key].field !== null) {
-        console.log(data[303].split(pattern())[index])
         return {
-          index: index,
-          origin: key,
-          target: configurations[key].field
+          [index]: {
+            index: index,
+            origin: key,
+            target: configurations[key].field
+          }
         }
       } else {
         return null
       }
     }).filter(item => item !== null)
 
-    const JSONData = ''
-    const csvData = ''
+    const newRows = [].fill(data.length - 1)
+
+    data.forEach((row, i) => {
+      if ((i > 0) && (i < 20)) {
+        newRows[i - 1] = {}
+        row.split(pattern()).forEach((cell, j) => {
+          if (chosenTargetFields[j]) {
+            newRows[i - 1][chosenTargetFields[j]] = cell
+          }
+        })
+      }
+    })
+    console.log(newRows)
+    const JSONData = newRows
+    const csvData = newRows.map(item => `${item[headers[0]]}`)
 
 
 
