@@ -64,7 +64,7 @@ function FieldsTable ({
       setConfigurations({ ...configs })
       setLoadConfigurations(false)
     }
-  }, [loadConfigurations, originalFields, setLoadConfigurations])
+  }, [loadConfigurations, originalFields, setLoadConfigurations, setConfigurations])
 
   const checkFields = () => {
     setEditing(false)
@@ -72,10 +72,10 @@ function FieldsTable ({
     const allTargetFieldsUsed = targetAppfields.reduce(
       (previousValue, currentValue) =>
         previousValue && originalFields.find(of =>
-          configurations[of].value === currentValue), true)
+          configurations[of].field === currentValue), true)
     // que al menos un campo no esté anulado
     const atLeastOneNotNullField = Object.keys(configurations).reduce((previousValue, currentValue) =>
-      currentValue && (configurations[currentValue].value != null), true)
+      currentValue || (configurations[currentValue].value !== 'null'), true)
     if (!allTargetFieldsUsed) {
       setCheckError('Hay campos destino sin usar')
       return
