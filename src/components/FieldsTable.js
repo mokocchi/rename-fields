@@ -1,7 +1,12 @@
-import { React, useState } from 'react'
+import { React, useEffect, useState } from 'react'
 import { Alert, Button, Col, Form, Row, Table } from 'react-bootstrap'
 
-function FieldsTable({ targetAppfields, originalFields, setOriginalFields, columns, data, separator }) {
+function FieldsTable ({
+  targetAppfields, originalFields, setOriginalFields,
+  columns, data, separator, loadConfigurations, setLoadConfigurations,
+  setConfigurations, configurations,
+  setChosenTargetFields, chosenTargetFields
+}) {
   const [line, setLine] = useState('')
   const [error, setError] = useState('')
   const [errorFieldName, setErrorFieldName] = useState('')
@@ -15,8 +20,6 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
   const [partialFields, setPartialFields] = useState([])
   const [partialFieldErrors, setPartialFieldErrors] = useState([])
   const [showPartialFields, setShowPartialFields] = useState([])
-  const [chosenTargetFields, setchosenTargetFields] = useState({})
-  const [configurations, setConfigurations] = useState({})
   const formats = [
     'text',
     'integer',
@@ -50,11 +53,38 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
     setError('')
   }
 
-  const handleKeyDown = e => e.target.code === 'Enter' && handleLineChange()
+  useEffect(() => {
+    if (loadConfigurations) {
+      const configs = {}
+      originalFields.forEach(item => {
+        configs[item] = {
+          value: 'null'
+        }
+      })
+      setConfigurations({ ...configs })
+      setLoadConfigurations(false)
+    }
+  }, [loadConfigurations, originalFields, setLoadConfigurations])
 
   const checkFields = () => {
     setEditing(false)
-    setCheckError('falta validación')
+    // que todos los target fields estén ocupados
+    const allTargetFieldsUsed = targetAppfields.reduce(
+      (previousValue, currentValue) =>
+        previousValue && originalFields.find(of =>
+          configurations[of].value === currentValue), true)
+    // que al menos un campo no esté anulado
+    const atLeastOneNotNullField = Object.keys(configurations).reduce((previousValue, currentValue) =>
+      currentValue && (configurations[currentValue].value != null), true)
+    if (!allTargetFieldsUsed) {
+      setCheckError('Hay campos destino sin usar')
+      return
+    }
+    if (!atLeastOneNotNullField) {
+      setCheckError('Debe haber al menos un campo no anulado')
+      return
+    }
+    setCheckError('')
   }
 
   const handleExport = () => {
@@ -74,7 +104,7 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
 
     const chosentfs = chosenTargetFields
     chosentfs[index] = e.target.value
-    setchosenTargetFields({ ...chosentfs })
+    setChosenTargetFields([...chosentfs])
   }
 
   const handleClickCustomField = () => setShowCustomField(true)
@@ -100,6 +130,8 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
   const handleSaveField = () => {
     if (customField === '') {
       setErrorFieldName('El campo está vacío')
+    } else if (customField === 'null') {
+      setErrorFieldName('El campo no puede llamarse "null"')
     } else {
       const fields = originalFields
       if (!fields.includes(customField)) {
@@ -240,7 +272,7 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
                 <div className='invalid-feedback d-block'>
                   {error}
                 </div>
-                <Form.Control className={(error === '') ? ((line !== '') && 'is-valid') : 'is-invalid'} onKeyDown={handleKeyDown} value={line} onChange={handleLineChange} type='text' placeholder='Ingrese un número de línea...' />
+                <Form.Control className={(error === '') ? ((line !== '') && 'is-valid') : 'is-invalid'} value={line} onChange={handleLineChange} type='text' placeholder='Ingrese un número de línea...' />
               </Form.Group>
             </th>
             <th>
@@ -260,7 +292,7 @@ function FieldsTable({ targetAppfields, originalFields, setOriginalFields, colum
               <td>{of}</td>
               <td>{(data.length === 1) ? 'No hay datos' : ((error === '') && (line !== '') ? data[Math.floor(Number(line))].split(pattern())[indexof] : '')}</td>
               <td>
-                <Form.Select value={chosenTargetFields[indexof]} disabled={targetAppfields.length === 0} onChange={e => handleFieldChange(e, indexof)}>
+                <Form.Select value={console.log(indexof, ': ', chosenTargetFields[indexof]) || chosenTargetFields[indexof]} disabled={targetAppfields.length === 0} onChange={e => handleFieldChange(e, indexof)}>
                   {(targetAppfields.length === 0)
                     ? <option>No hay campos</option>
                     : <option key='null'>Anular campo</option>}

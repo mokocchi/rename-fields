@@ -2,7 +2,11 @@ import { React, useState } from 'react'
 import { Button, Col, Form, Row, Spinner } from 'react-bootstrap'
 import Settings from './Settings'
 
-function Header ({ targetAppfields, setTargetAppfields, setOriginalFields, setData, separator, setSeparator }) {
+function Header ({
+  targetAppfields, setTargetAppfields, setOriginalFields, setData, separator, setSeparator,
+  setLoadConfigurations, setConfigurations, configurations,
+  setChosenTargetFields, chosenTargetFields
+}) {
   const [fileName, setFileName] = useState('')
   const [file, setFile] = useState()
   const [loading, setLoading] = useState(false)
@@ -16,6 +20,7 @@ function Header ({ targetAppfields, setTargetAppfields, setOriginalFields, setDa
     setOriginalFields(headers)
     setData(dataStringLines)
     setLoading(false)
+    setLoadConfigurations(true)
   }
 
   const handleSelect = e => {
@@ -63,7 +68,11 @@ function Header ({ targetAppfields, setTargetAppfields, setOriginalFields, setDa
         </Form.Group>
       </Col>
       <Col>
-        <Settings targetAppfields={targetAppfields} setTargetAppfields={setTargetAppfields} />
+        <Settings
+          targetAppfields={targetAppfields} setTargetAppfields={setTargetAppfields}
+          setConfigurations={setConfigurations} configurations={configurations}
+          setChosenTargetFields={setChosenTargetFields} chosenTargetFields={chosenTargetFields}
+        />
       </Col>
     </Row>
   )

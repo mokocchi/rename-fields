@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { Button, Modal, ListGroup, ListGroupItem, Form, Row, Col } from 'react-bootstrap'
 
-function Settings ({ targetAppfields, setTargetAppfields }) {
+function Settings ({
+  targetAppfields, setTargetAppfields, setConfigurations, configurations,
+  setChosenTargetFields, chosenTargetFields
+}) {
   const [show, setShow] = useState(false)
   const [newField, setNewField] = useState('')
   const [error, setError] = useState('')
@@ -34,6 +37,17 @@ function Settings ({ targetAppfields, setTargetAppfields }) {
   }
 
   const handleDelete = (index) => {
+    const configs = configurations
+    Object.keys(configurations).forEach(key => {
+      const chosenFields = chosenTargetFields
+      if (configurations[key].field === chosenFields[index]) {
+        configurations[key].value = null
+        chosenFields[index] = 'null'
+        setChosenTargetFields([...chosenTargetFields])
+        console.log(chosenTargetFields)
+      }
+    })
+    setConfigurations({ ...configs })
     const fields = targetAppfields
     fields.splice(index, 1)
     setTargetAppfields([...fields])
